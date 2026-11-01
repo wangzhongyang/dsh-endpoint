@@ -18,7 +18,7 @@ const TEXT_TYPES = [
   'application/sql',
 ]
 
-const TEXT_MAX_BYTES = 512 * 1024
+const DEFAULT_TEXT_MAX_BYTES = 1024 * 1024
 
 /**
  * Parse one `data:` URL. Remote URLs are rejected on purpose: the endpoint
@@ -44,8 +44,8 @@ export function parseDataUrl(url, param) {
   const payload = match[3] ?? ''
   let data
   if (/;base64/i.test(parameters)) {
-    // Guard before decoding: base64 expands by ~4/3.
-    if (payload.length > 64 * 1024 * 1024) throw badRequest(`${param} is too large`, param)
+    // The request body cap is the real gate; by the time we get here the whole
+    // body is already bounded by `limits.maxBodyBytes`.
     data = Buffer.from(payload, 'base64')
   } else {
     data = Buffer.from(decodeURIComponent(payload), 'utf8')
@@ -88,8 +88,12 @@ export async function decodeInlineFile({ url, name, param }, options = {}) {
     return { type: 'image', attachment: ref }
   }
   if (isTextMediaType(mediaType) && options.allowText === true) {
-    const truncated = data.length > TEXT_MAX_BYTES
-    const text = data.subarray(0, TEXT_MAX_BYTES).toString('utf8')
+    const limit =
+      Number.isFinite(options.maxTextBytes) && options.maxTextBytes > 0
+        ? Math.floor(options.maxTextBytes)
+        : DEFAULT_TEXT_MAX_BYTES
+    const truncated = data.length > limit
+    const text = data.subarray(0, limit).toString('utf8')
     const header = `[file${name ? `: ${name}` : ''}${truncated ? ', truncated' : ''}]\n`
     return { type: 'text', text: header + text }
   }

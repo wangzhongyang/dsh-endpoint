@@ -33,6 +33,17 @@ test('image media types normalise and text types are detected', () => {
   assert.equal(isTextMediaType('application/pdf'), false)
 })
 
+test('text inlining honours maxTextBytes and marks truncation', async () => {
+  const big = Buffer.from('x'.repeat(50), 'utf8').toString('base64')
+  const block = await decodeInlineFile(
+    { url: `data:text/plain;base64,${big}`, name: 'big.txt', param: 'p' },
+    { allowText: true, maxTextBytes: 10 },
+  )
+  assert.equal(block.type, 'text')
+  assert.match(block.text, /truncated/)
+  assert.equal(block.text.split('\n')[1], 'x'.repeat(10))
+})
+
 test('inline files decode to content blocks', async () => {
   const image = await decodeInlineFile(
     { url: `data:image/png;base64,${PNG_B64}`, param: 'p' },

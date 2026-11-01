@@ -17,6 +17,7 @@ window.__ModuleLoader__.load({
     var DICT = {
       zh: {
         nav: '模型端点',
+        version: '版本',
         status: '状态',
         address: '运行地址',
         providers: 'Provider',
@@ -56,6 +57,7 @@ window.__ModuleLoader__.load({
       },
       en: {
         nav: 'Model Endpoint',
+        version: 'Version',
         status: 'Status',
         address: 'Address',
         providers: 'Providers',
@@ -331,6 +333,7 @@ window.__ModuleLoader__.load({
           ? [h('div', { key: 'loading', style: S.hint }, t('loading'))]
           : [
               h(Field, { key: 'url', label: t('address') }, h('div', { style: S.mono }, status.url)),
+              h(Field, { key: 'version', label: t('version') }, h('div', { style: S.hint }, status.version || '—')),
               h(
                 Field,
                 { key: 'providers', label: t('providers') },

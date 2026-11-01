@@ -43,6 +43,14 @@ async function withServer(llm, run, overrides = {}) {
   }
 }
 
+test('GET /healthz reports the package version', async () => {
+  await withServer(fakeLlm(), async (handle) => {
+    const body = await (await fetch(`${handle.url}/healthz`)).json()
+    assert.match(body.version, /^\d+\.\d+\.\d+/)
+    assert.deepEqual(body.providers, ['test'])
+  })
+})
+
 test('GET /v1/models lists provider/model ids and aliases', async () => {
   await withServer(fakeLlm(), async (handle) => {
     const response = await fetch(`${handle.url}/v1/models`)

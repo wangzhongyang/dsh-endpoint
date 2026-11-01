@@ -60,6 +60,12 @@ export const Config = z.object({
         .natural()
         .default(8 * 1024 * 1024)
         .description('Reject request bodies larger than this.'),
+      maxTextFileBytes: z
+        .natural()
+        .default(1024 * 1024)
+        .description(
+          'How much of one inline text file is inlined into the prompt. The request body cap is the hard ceiling; truncation is marked in the text.',
+        ),
       maxOutputTokens: z
         .natural()
         .default(32768)

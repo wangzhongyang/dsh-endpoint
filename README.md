@@ -124,6 +124,21 @@ Inline base64 only — the endpoint never fetches remote URLs on a client's beha
 Attachments live in DSH's attachment store, so the mirrored session keeps a compact reference
 instead of megabytes of base64.
 
+### Limits
+
+| Limit | Value | Source |
+|---|---|---|
+| Request body | 8 MiB | `limits.maxBodyBytes`, a plugin default |
+| One inline text file | 1 MiB, truncated with a marker | `limits.maxTextFileBytes`, a plugin default |
+| One image | 20 MiB | DSH attachment service (not this plugin) |
+| Images per message | 20 | DSH attachment service |
+| Total image bytes per message | 200 MiB | DSH attachment service |
+| Image pixels / longest side | 64 MP / 8192 px | DSH attachment service |
+
+The text-file cap is a prompt-size guard, not a protocol limit: the body is already
+bounded by `maxBodyBytes`, and a file near the cap is far past most models' context
+windows. Truncation is announced in the inlined text, so the model knows it is partial.
+
 **Ignored on purpose:** every other unknown field (`top_p`, `seed`, `service_tier`,
 `metadata`, …). Real clients send fields this build does not model; rejecting them would
 break more than it protects, so they are logged and dropped rather than silently applied.

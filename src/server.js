@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { mergeConfig, readOverlay, registerAdminRoutes } from './admin.js'
+import { VERSION } from './version.js'
 import { ModelCatalog } from './dsh/catalog.js'
 import { SessionMirror, toolResultEvent, userMessageEvent } from './mirror.js'
 import { MappingStore } from './session/registry.js'
@@ -43,6 +44,7 @@ export function createHandler(deps) {
         return sendJson(res, 200, {
           ok: true,
           object: 'dsh-endpoint.health',
+          version: VERSION,
           providers: deps.catalog.providers().map((provider) => provider.id),
         })
       }
@@ -85,7 +87,10 @@ async function handleChat(req, res, body, deps, requestId) {
 
   const route = catalog.resolve(body.model)
   const wantsStream = body.stream === true
-  const messages = await toDshMessages(body.messages, route, { saveImages: deps.saveImages })
+  const messages = await toDshMessages(body.messages, route, {
+    saveImages: deps.saveImages,
+    maxTextBytes: config.limits.maxTextFileBytes,
+  })
   const tools = toDshTools(body.tools)
 
   const identity =
@@ -519,6 +524,7 @@ export async function startEndpoint(ctx, config, options) {
       catalog.defaultModel = next.defaultModel ?? ''
     },
     getState: async () => ({
+      version: VERSION,
       url: `http://${formatHost(effective.host)}:${current.port}`,
       host: effective.host,
       port: current.port,
