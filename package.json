@@ -1,0 +1,70 @@
+{
+  "name": "dsh-endpoint",
+  "version": "1.0.0",
+  "description": "OpenAI-compatible HTTP endpoint that forwards model calls through a running DeepSeek Harness",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "openai-compatible",
+    "openai-api",
+    "llm-gateway",
+    "endpoint"
+  ],
+  "license": "MIT",
+  "author": "wangzhongyang",
+  "homepage": "https://github.com/wangzhongyang/dsh-endpoint#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangzhongyang/dsh-endpoint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wangzhongyang/dsh-endpoint/issues"
+  },
+  "icon": "icon.svg",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json",
+    "./client": "./src/client.js"
+  },
+  "files": [
+    "src",
+    "cordis.patch.yml",
+    "icon.svg",
+    "examples",
+    "docs",
+    "README.md",
+    "README.zh.md",
+    "CHANGELOG.md",
+    "SECURITY.md"
+  ],
+  "engines": {
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.1-rc.2"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    },
+    "compatibility": {
+      "dshReleases": {
+        "0.2.1-rc.3": "compatible"
+      }
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "~3.18.5"
+  },
+  "scripts": {
+    "test": "node --test",
+    "prepublishOnly": "node --test"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

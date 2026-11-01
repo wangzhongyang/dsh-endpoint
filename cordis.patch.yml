@@ -1,0 +1,9 @@
+# Bundle layer for dsh-endpoint.
+#
+# This package is a *bundle*: list it in a profile's `dsh.profile.bundles` and
+# this patch contributes the host plugin that serves the OpenAI-compatible
+# endpoint. Every model call is executed by `ctx.llm`, so provider routing and
+# credentials stay owned by whichever profile mounted the adapters.
+- insert:
+    - id: dsh-endpoint
+      name: dsh-endpoint
