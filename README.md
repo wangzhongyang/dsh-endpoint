@@ -1,5 +1,9 @@
 # dsh-endpoint
 
+[![npm](https://img.shields.io/npm/v/dsh-endpoint)](https://www.npmjs.com/package/dsh-endpoint)
+[![license](https://img.shields.io/npm/l/dsh-endpoint)](LICENSE)
+[![ci](https://github.com/wangzhongyang/dsh-endpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzhongyang/dsh-endpoint/actions/workflows/ci.yml)
+
 Expose the model providers and models already configured in DeepSeek Harness as an
 OpenAI-compatible HTTP endpoint.
 

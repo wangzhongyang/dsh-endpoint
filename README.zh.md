@@ -1,5 +1,9 @@
 # dsh-endpoint
 
+[![npm](https://img.shields.io/npm/v/dsh-endpoint)](https://www.npmjs.com/package/dsh-endpoint)
+[![license](https://img.shields.io/npm/l/dsh-endpoint)](LICENSE)
+[![ci](https://github.com/wangzhongyang/dsh-endpoint/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzhongyang/dsh-endpoint/actions/workflows/ci.yml)
+
 把 DeepSeek Harness 里已经配置好的模型供应商和模型，暴露成一个 OpenAI 兼容的 HTTP 端点。
 
 端点只负责转发：它不持有任何 provider 凭据，也不直接访问三方 API。每一次模型调用都走
