@@ -116,8 +116,8 @@ dsh plugin --profile web add /absolute/path/to/dsh-endpoint
 
 | 限制 | 值 | 来源 |
 |---|---|---|
-| 请求体 | 8 MiB | 插件默认值 `limits.maxBodyBytes` |
-| 单个内联文本文件 | 1 MiB，超出会截断并标注 | 插件默认值 `limits.maxTextFileBytes` |
+| 请求体 | 20 MiB，上限 300 MiB | 插件默认值 `limits.maxBodyBytes`。DSH 自身 `/api` 默认 300 MiB（314572800），超过会被拒绝 |
+| 单个内联文本文件 | 8 MiB，且不得超过请求体上限 | 插件默认值 `limits.maxTextFileBytes`。DSH 侧没有文件大小限制 |
 | 单张图片 | 20 MiB | DSH 附件服务（不是本插件） |
 | 每条消息图片数 | 20 | DSH 附件服务 |
 | 每条消息图片总字节 | 200 MiB | DSH 附件服务 |

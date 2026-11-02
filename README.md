@@ -128,8 +128,8 @@ instead of megabytes of base64.
 
 | Limit | Value | Source |
 |---|---|---|
-| Request body | 8 MiB | `limits.maxBodyBytes`, a plugin default |
-| One inline text file | 1 MiB, truncated with a marker | `limits.maxTextFileBytes`, a plugin default |
+| Request body | 20 MiB, max 300 MiB | `limits.maxBodyBytes`, a plugin default. DSH's own `/api` limit is 300 MiB (314572800); higher values are rejected |
+| One inline text file | 8 MiB, never above the body cap | `limits.maxTextFileBytes`, a plugin default. DSH sets no file-size limit |
 | One image | 20 MiB | DSH attachment service (not this plugin) |
 | Images per message | 20 | DSH attachment service |
 | Total image bytes per message | 200 MiB | DSH attachment service |

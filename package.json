@@ -1,6 +1,6 @@
 {
   "name": "dsh-endpoint",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "OpenAI-compatible HTTP endpoint that forwards model calls through a running DeepSeek Harness",
   "keywords": [
     "dsh",

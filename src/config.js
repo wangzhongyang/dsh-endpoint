@@ -1,4 +1,5 @@
 import z from '@deepseek-ai/schemastery'
+import { DSH_MAX_REQUEST_BODY_BYTES } from './limits.js'
 
 /**
  * Plugin configuration. The Settings -> Plugins form is generated from this
@@ -58,13 +59,17 @@ export const Config = z.object({
     .object({
       maxBodyBytes: z
         .natural()
-        .default(8 * 1024 * 1024)
-        .description('Reject request bodies larger than this.'),
+        .max(DSH_MAX_REQUEST_BODY_BYTES)
+        .default(20 * 1024 * 1024)
+        .description(
+          "Reject request bodies larger than this. Default 20 MiB. DSH's own /api limit is 300 MiB (314572800); values above it are rejected.",
+        ),
       maxTextFileBytes: z
         .natural()
-        .default(1024 * 1024)
+        .max(DSH_MAX_REQUEST_BODY_BYTES)
+        .default(8 * 1024 * 1024)
         .description(
-          'How much of one inline text file is inlined into the prompt. The request body cap is the hard ceiling; truncation is marked in the text.',
+          'How much of one inline text file is inlined into the prompt. Default 8 MiB, never more than maxBodyBytes. DSH itself sets no file-size limit. Truncation is marked in the text.',
         ),
       maxOutputTokens: z
         .natural()

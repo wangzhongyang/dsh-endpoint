@@ -1,5 +1,6 @@
 import { readFile, rename, writeFile, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
+import { DSH_MAX_REQUEST_BODY_BYTES } from './limits.js'
 
 /** Fields the settings page may write into the user overlay. */
 const CONFIG_KEYS = ['host', 'port', 'defaultModel', 'modelAliases', 'session', 'limits', 'log']
@@ -76,6 +77,28 @@ export function normalisePatch(input, base) {
     }
     patch.modelAliases = input.modelAliases
   }
+  if ('limits' in input) {
+    const limits = input.limits
+    if (!isPlainObject(limits)) throw new Error('limits must be an object')
+    const next = {}
+    if ('maxBodyBytes' in limits) {
+      const bytes = Number(limits.maxBodyBytes)
+      if (!Number.isInteger(bytes) || bytes < 1) throw new Error('limits.maxBodyBytes must be a positive integer')
+      if (bytes > DSH_MAX_REQUEST_BODY_BYTES) {
+        throw new Error(`limits.maxBodyBytes cannot exceed DSH's ${DSH_MAX_REQUEST_BODY_BYTES} bytes`)
+      }
+      next.maxBodyBytes = bytes
+    }
+    if ('maxTextFileBytes' in limits) {
+      const bytes = Number(limits.maxTextFileBytes)
+      if (!Number.isInteger(bytes) || bytes < 1) throw new Error('limits.maxTextFileBytes must be a positive integer')
+      const ceiling = next.maxBodyBytes ?? base.limits.maxBodyBytes
+      if (bytes > ceiling) throw new Error('limits.maxTextFileBytes cannot exceed limits.maxBodyBytes')
+      next.maxTextFileBytes = bytes
+    }
+    patch.limits = next
+  }
+
   if ('session' in input) {
     const session = input.session
     if (!isPlainObject(session)) throw new Error('session must be an object')
@@ -134,7 +157,12 @@ async function handleAdmin(req, res, { root, getConfig, onSave, getState, log })
       const body = await readJson(req)
       const { patch, restartRequired, rebind } = normalisePatch(body, getConfig())
       const current = await readOverlay(root)
-      const overlay = { ...current, ...patch, ...(patch.session ? { session: { ...(current.session ?? {}), ...patch.session } } : {}) }
+      const overlay = {
+        ...current,
+        ...patch,
+        ...(patch.session ? { session: { ...(current.session ?? {}), ...patch.session } } : {}),
+        ...(patch.limits ? { limits: { ...(current.limits ?? {}), ...patch.limits } } : {}),
+      }
       await writeOverlay(root, overlay)
       const effective = mergeConfig(getConfig(), overlay)
       await onSave?.(effective, patch)

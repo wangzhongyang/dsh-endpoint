@@ -55,6 +55,19 @@ test('runtime fields do not require a restart', () => {
   assert.equal(normalisePatch({ session: { mappingTtlDays: 1 } }, base).restartRequired, false)
 })
 
+test('limits are accepted and bounded by DSH', () => {
+  const ok = normalisePatch({ limits: { maxBodyBytes: 20 * 1024 * 1024, maxTextFileBytes: 8 * 1024 * 1024 } }, base)
+  assert.deepEqual(ok.patch.limits, { maxBodyBytes: 20 * 1024 * 1024, maxTextFileBytes: 8 * 1024 * 1024 })
+  assert.equal(ok.restartRequired, false)
+
+  assert.throws(() => normalisePatch({ limits: { maxBodyBytes: 301 * 1024 * 1024 } }, base), /cannot exceed DSH/)
+  assert.throws(
+    () => normalisePatch({ limits: { maxBodyBytes: 1024 * 1024, maxTextFileBytes: 2 * 1024 * 1024 } }, base),
+    /cannot exceed limits.maxBodyBytes/,
+  )
+  assert.throws(() => normalisePatch({ limits: { maxBodyBytes: 1.5 } }, base), /positive integer/)
+})
+
 test('invalid values are rejected', () => {
   assert.throws(() => normalisePatch({ port: 70000 }, base), /port/)
   assert.throws(() => normalisePatch({ modelAliases: { x: 'no-slash' } }, base), /provider\/model/)

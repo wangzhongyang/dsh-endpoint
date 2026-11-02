@@ -18,7 +18,7 @@ const TEXT_TYPES = [
   'application/sql',
 ]
 
-const DEFAULT_TEXT_MAX_BYTES = 1024 * 1024
+const DEFAULT_TEXT_MAX_BYTES = 8 * 1024 * 1024
 
 /**
  * Parse one `data:` URL. Remote URLs are rejected on purpose: the endpoint

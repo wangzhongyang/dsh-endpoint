@@ -38,6 +38,14 @@ window.__ModuleLoader__.load({
         aliasesHint: 'JSON 对象，例如 {"gpt-4o": "opencode-go/deepseek-v4.1-flash"}',
         mirror: '会话镜像',
         mirrorOn: '把每段 API 对话写成一个 DSH 会话（侧栏可见、只读）',
+        limits: '限制',
+        bodyLimit: '请求体上限',
+        bodyLimitHint: 'MiB。DSH 自身 /api 默认 300 MiB，超过会被拒绝',
+        textLimit: '文本文件上限',
+        textLimitHint: 'MiB，且不能超过请求体上限；DSH 本身不限制文件大小',
+        mib: 'MiB',
+        bodyLimitError: '请求体上限必须在 1 到 300 MiB 之间',
+        textLimitError: '文本文件上限不能超过请求体上限',
         ttl: '映射保留',
         ttlHint: '外部会话 ID 超过这个天数没再用，就解绑并归档',
         ttlUnit: '天',
@@ -78,6 +86,14 @@ window.__ModuleLoader__.load({
         aliasesHint: 'JSON object, e.g. {"gpt-4o": "opencode-go/deepseek-v4.1-flash"}',
         mirror: 'Session mirror',
         mirrorOn: 'Write each API conversation into a DSH session (visible in the sidebar, read-only)',
+        limits: 'Limits',
+        bodyLimit: 'Request body limit',
+        bodyLimitHint: "MiB. DSH's own /api default is 300 MiB; higher values are rejected",
+        textLimit: 'Inline text file limit',
+        textLimitHint: 'MiB, never above the body limit; DSH itself sets no file-size limit',
+        mib: 'MiB',
+        bodyLimitError: 'Request body limit must be between 1 and 300 MiB',
+        textLimitError: 'Inline text file limit cannot exceed the body limit',
         ttl: 'Mapping retention',
         ttlHint: 'Days an external conversation id keeps its session after its last use',
         ttlUnit: 'days',
@@ -179,6 +195,10 @@ window.__ModuleLoader__.load({
       err: { fontSize: 12, color: '#f85149' },
     }
 
+    function round1(value) {
+      return Math.round(value * 10) / 10
+    }
+
     function Field(props) {
       return h(
         'div',
@@ -251,6 +271,8 @@ window.__ModuleLoader__.load({
               mirror: config.session ? config.session.mirror !== false : true,
               ttl: config.session ? config.session.mappingTtlDays : 3,
               workspacePath: config.session ? config.session.workspacePath || '' : '',
+              bodyMiB: config.limits ? round1(config.limits.maxBodyBytes / 1048576) : 20,
+              textMiB: config.limits ? round1(config.limits.maxTextFileBytes / 1048576) : 8,
             })
           })
           .catch(function (error) {
@@ -276,6 +298,16 @@ window.__ModuleLoader__.load({
           setMessage({ kind: 'err', text: t('aliasesInvalid') + String(error.message || error) })
           return
         }
+        var bodyBytes = Math.round(Number(form.bodyMiB) * 1048576)
+        var textBytes = Math.round(Number(form.textMiB) * 1048576)
+        if (!(bodyBytes >= 1048576) || bodyBytes > 300 * 1048576) {
+          setMessage({ kind: 'err', text: t('bodyLimitError') })
+          return
+        }
+        if (textBytes > bodyBytes) {
+          setMessage({ kind: 'err', text: t('textLimitError') })
+          return
+        }
         setBusy(true)
         setMessage(null)
         fetch('/dsh-endpoint/config', {
@@ -286,6 +318,7 @@ window.__ModuleLoader__.load({
             port: Number(form.port),
             defaultModel: form.defaultModel,
             modelAliases: aliases,
+            limits: { maxBodyBytes: bodyBytes, maxTextFileBytes: textBytes },
             session: {
               mirror: form.mirror,
               mappingTtlDays: Number(form.ttl),
@@ -419,6 +452,51 @@ window.__ModuleLoader__.load({
                 update({ aliases: event.target.value })
               },
             }),
+          ),
+        ),
+        h(
+          'div',
+          { style: S.card },
+          h('div', { style: S.title }, t('limits')),
+          h(
+            Field,
+            { label: t('bodyLimit'), hint: t('bodyLimitHint') },
+            h(
+              'div',
+              { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+              h('input', {
+                style: Object.assign({}, S.input, { width: 120 }),
+                type: 'number',
+                min: 1,
+                max: 300,
+                step: 1,
+                value: form.bodyMiB,
+                onChange: function (event) {
+                  update({ bodyMiB: event.target.value })
+                },
+              }),
+              h('span', { style: S.hint }, t('mib')),
+            ),
+          ),
+          h(
+            Field,
+            { label: t('textLimit'), hint: t('textLimitHint') },
+            h(
+              'div',
+              { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+              h('input', {
+                style: Object.assign({}, S.input, { width: 120 }),
+                type: 'number',
+                min: 1,
+                max: 300,
+                step: 1,
+                value: form.textMiB,
+                onChange: function (event) {
+                  update({ textMiB: event.target.value })
+                },
+              }),
+              h('span', { style: S.hint }, t('mib')),
+            ),
           ),
         ),
         h(

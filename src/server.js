@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { mergeConfig, readOverlay, registerAdminRoutes } from './admin.js'
+import { clampLimits } from './limits.js'
 import { VERSION } from './version.js'
 import { ModelCatalog } from './dsh/catalog.js'
 import { SessionMirror, toolResultEvent, userMessageEvent } from './mirror.js'
@@ -446,6 +447,7 @@ export async function startEndpoint(ctx, config, options) {
   const root = options.stateRoot ?? resolveStateRoot(ctx)
   const overlay = await readOverlay(root)
   const effective = mergeConfig(config, overlay)
+  effective.limits = clampLimits(effective.limits ?? {}, log)
 
   const catalog = new ModelCatalog(llm, {
     aliases: effective.modelAliases,
@@ -520,6 +522,7 @@ export async function startEndpoint(ctx, config, options) {
       const portChanged = patch.port !== undefined && Number(patch.port) !== effective.port
       if (hostChanged || portChanged) await rebind(next.host, next.port)
       for (const key of Object.keys(next)) effective[key] = next[key]
+      effective.limits = clampLimits(next.limits ?? {}, log)
       catalog.aliases = next.modelAliases ?? {}
       catalog.defaultModel = next.defaultModel ?? ''
     },
